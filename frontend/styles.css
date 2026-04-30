@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Calistoga&display=swap');
+.container {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+}
+.chat-now-btn {
+    position: relative;
+    margin: 30px;
+    width: 300px;
+    height: 100px;
+    background-image: linear-gradient(#1699ea,rgb(255, 255, 255));
+    border-radius: 60px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Calistoga', cursive;
+    font-weight: bold;
+    overflow: hidden;
+    border: white 3px solid;
+
+}
+
+.chat-now-btn p {
+    margin: 0;
+    text-align: center;
+}
+
+.chat-now-btn p:first-child {
+    padding-top: 18px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.chat-now-btn p:last-child {
+    font-size: 14px;
+    padding-bottom: 5px;
+    font-weight: normal;
+    color: #44aff1
+}
+
+.chat-now-btn:hover p:first-child {
+    color: #009dff;
+}
