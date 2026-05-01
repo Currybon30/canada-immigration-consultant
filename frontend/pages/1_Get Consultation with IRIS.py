@@ -54,6 +54,8 @@ st.markdown(
 
 def get_consultation_page():
     get_iris_id()
+    
+    st.caption("⚠️ Responses may vary due to external AI model availability.")
         
     if st.session_state.error_chat:
         st.session_state.disabled_chat = True
@@ -61,7 +63,7 @@ def get_consultation_page():
     for message in st.session_state.messages:
         with st.chat_message(message["role"], avatar=message["avatar"]):
             st.markdown(message["text"])
-        
+
     if not any(message["text"] == "Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, I suggest you read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation." for message in st.session_state.messages):
         
         time.sleep(1.5)
@@ -73,10 +75,10 @@ def get_consultation_page():
         
         waiting_message.empty()
         with st.chat_message("assistant", avatar="🤖"):
-            st.markdown("Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, I suggest you read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.")
-        st.session_state.messages.append({"role": "assistant", "text": "Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, I suggest you read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.", "avatar": "🤖"})
+            st.markdown("Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.")
+        st.session_state.messages.append({"role": "assistant", "text": "Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.", "avatar": "🤖"})
     
-    if prompt := st.chat_input("Type your message here...", disabled=st.session_state.disabled_chat):
+    if prompt := st.chat_input("Ask about study permits, PGWP, or visas...", disabled=st.session_state.disabled_chat):
         try:
             if any(word in prompt.lower() for word in ["bye", "goodbye", "exit", "quit", "thank", "thanks"]):
                 with st.chat_message("human", avatar="🧑‍🎓"):
@@ -134,7 +136,7 @@ def get_iris_id():
     try:
         response = requests.get(
             "https://canada-immigration-consultant.onrender.com/api/iris-id",
-            timeout=5
+            timeout=20
         )
 
         if response.status_code != 200:
@@ -150,6 +152,9 @@ def get_iris_id():
             return
 
         st.session_state.iris_id = data["iris_id"]
+    except requests.exceptions.ReadTimeout:
+        st.warning("⏳ Server is waking up... please try again in a few seconds.")
+        return
     except requests.exceptions.ConnectionError:
         st.session_state.connection_error = st.error("Trying to connect to server.\n\nTentative de connexion au serveur.")
         time.sleep(15)
