@@ -1,22 +1,8 @@
 import os
 from typing import TypedDict, List, Optional
-from langgraph.graph import StateGraph, END, START
-from controllers.agents.document_search_agent import DocumentSearchAgent
-from controllers.agents.conversation_agent import ConversationAgent
-from controllers.agents.faq_agent import FAQAgent
-from controllers.agents.cross_check_agent import CrossCheckAgent
-from controllers.agents.decision_agent import DecisionAgent
-from controllers.agents.crs_links_agent import CRSLinksAgent
-import googletrans
-from langchain.schema import HumanMessage
-from langgraph.checkpoint.memory import MemorySaver
 from controllers.data_processing import extract_keys_hyperlinks_pinecone
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import langsmith as ls
-from io import BytesIO
-import asyncio
 import logging
+from utils.llm_extraction_helper import clean_generation
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -24,24 +10,66 @@ LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT")
 USE_LOCAL_MODEL = os.getenv("USE_LOCAL_MODEL", "false").lower() == "true"
 
-if USE_LOCAL_MODEL:
-    print("Loading local LLM...")
-    ConversationAgent.load_local_model()
-    print("Local LLM loaded successfully")
-else:
-    print("Skipping local LLM (using API)")
-
-memory = MemorySaver()
-langsmith_client = ls.Client(api_url=LANGSMITH_ENDPOINT, api_key=LANGSMITH_API_KEY)
-conv_agent = ConversationAgent()
-document_search_agent = DocumentSearchAgent()
-faq_agent = FAQAgent()
-cross_check_agent = CrossCheckAgent()
-dec_agent = DecisionAgent()
-crs_links_agent = CRSLinksAgent()
-translator = googletrans.Translator()
-detected_lang = None
+memory = None
+langsmith_client = None
+conv_agent = None
+document_search_agent = None
+faq_agent = None
+cross_check_agent = None
+dec_agent = None
+crs_links_agent = None
+translator = None
+_graph = None
+_initialized = False
 logging.basicConfig(level=logging.CRITICAL, format="%(message)s", handlers=[logging.StreamHandler()])
+
+
+def _initialize_runtime():
+    global _initialized
+    global memory, langsmith_client, conv_agent, document_search_agent
+    global faq_agent, cross_check_agent, dec_agent, crs_links_agent, translator, _graph
+
+    from langgraph.checkpoint.memory import MemorySaver
+    import googletrans
+
+    from controllers.agents.document_search_agent import DocumentSearchAgent
+    from controllers.agents.conversation_agent import ConversationAgent
+    from controllers.agents.faq_agent import FAQAgent
+    from controllers.agents.cross_check_agent import CrossCheckAgent
+    from controllers.agents.decision_agent import DecisionAgent
+    from controllers.agents.crs_links_agent import CRSLinksAgent
+
+    if _initialized:
+        return
+
+    if USE_LOCAL_MODEL:
+        print("Loading local LLM...")
+        ConversationAgent.load_local_model()
+        print("Local LLM loaded successfully")
+    else:
+        print("Skipping local LLM (using API)")
+
+    memory = MemorySaver()
+    # Optional dependency in some deployments; keep startup resilient.
+    try:
+        import langsmith as ls
+        langsmith_client = ls.Client(api_url=LANGSMITH_ENDPOINT, api_key=LANGSMITH_API_KEY)
+    except Exception:
+        langsmith_client = None
+    conv_agent = ConversationAgent()
+    document_search_agent = DocumentSearchAgent()
+    faq_agent = FAQAgent()
+    cross_check_agent = CrossCheckAgent()
+    dec_agent = DecisionAgent()
+    crs_links_agent = CRSLinksAgent()
+    translator = googletrans.Translator()
+    _graph = _build_graph()
+    _initialized = True
+
+
+def get_graph():
+    _initialize_runtime()
+    return _graph
 
 class GraphState(TypedDict):
     sender: Optional[str]
@@ -55,17 +83,17 @@ class GraphState(TypedDict):
     revised_message: Optional[str]
     request_user: Optional[str]
     category: Optional[str]
+    detected_lang: Optional[str]
     
     
-@ls.traceable(langsmith_client, name="conversation_agent")
 async def conversation_agent(state, **kwargs):
     question = state['question']
     sender = state['sender']
     category = state.get('category', None)
+    detected_lang = state.get("detected_lang")
     if sender not in ['document_search_agent', 'faq_agent', 'cross_check_agent', 'crs_links_agent']:
         response = await conv_agent.handle_user_request(question)
         if response[1] != "general" or response[1].lower() != "none":
-            global detected_lang
             detected_lang = response[0]
             if response[0] == "fr" and response[3] == None:
                 question = response[2]
@@ -78,6 +106,7 @@ async def conversation_agent(state, **kwargs):
             return {
                 'question': question,
                 'generation': response[1], 
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': '_end_',
             }
@@ -85,6 +114,7 @@ async def conversation_agent(state, **kwargs):
             return {
                 'question': question, 
                 'generation': "Sorry, I am not able to answer this question. I can help you with questions related to international students in Canada about study permit, PGWP, and visa.",
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': '_end_',
             }
@@ -108,16 +138,22 @@ async def conversation_agent(state, **kwargs):
             {question}
             
             """
-            agent_response = conv_agent.chat.invoke([HumanMessage(content=prompt)])
+            from langchain.schema import HumanMessage
+            import asyncio
+            agent_response = await asyncio.to_thread(
+                conv_agent.chat.invoke,
+                [HumanMessage(content=prompt)])
             return {
                 'question': question, 
                 'generation': agent_response.content,
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': '_end_',
             }
         elif response[1] == "decision_agent":
             return {
                 'question': question, 
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': 'decision_agent',
             }
@@ -134,6 +170,7 @@ async def conversation_agent(state, **kwargs):
                     'question': question, 
                     'generation': generation,
                     'category': category,
+                    'detected_lang': detected_lang,
                     'sender': 'conversation_agent',
                     'receiver': '_end_',
                 }
@@ -143,6 +180,7 @@ async def conversation_agent(state, **kwargs):
                 'documents': documents,
                 'time_cross_check': state['time_cross_check'],
                 'category': category,
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': 'cross_check_agent'
             }
@@ -153,6 +191,7 @@ async def conversation_agent(state, **kwargs):
                 'question': question, 
                 'generation': generation,
                 'category': category,
+                'detected_lang': detected_lang,
                 'sender': 'conversation_agent',
                 'receiver': '_end_',
             }
@@ -166,6 +205,7 @@ async def conversation_agent(state, **kwargs):
             'documents': documents,
             'time_cross_check': state['time_cross_check'],
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'conversation_agent',
             'receiver': 'cross_check_agent'
         }
@@ -177,6 +217,7 @@ async def conversation_agent(state, **kwargs):
             'question': question, 
             'generation': generation,
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'conversation_agent',
             'receiver': '_end_',
         }
@@ -188,19 +229,21 @@ async def conversation_agent(state, **kwargs):
             'question': question,
             'generation': generation,
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'conversation_agent',
             'receiver': '_end_',
         }
 
-@ls.traceable(langsmith_client, name="decision_agent")
 def decision_agent(state, **kwargs):
     question = state['question']
     category = dec_agent.classify_question(question)
+    detected_lang = state.get("detected_lang")
     is_sp_pgwp_visa = dec_agent.is_the_query_related_to_study_permit_pgwp_or_visa(question)
     if is_sp_pgwp_visa:
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'decision_agent',
             'receiver': 'faq_agent'
         }
@@ -208,14 +251,15 @@ def decision_agent(state, **kwargs):
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'decision_agent',
             'receiver': 'crs_links_agent'
         }
 
-@ls.traceable(langsmith_client, name="document_search_agent")
 def rag_retrieval(state, **kwargs):
     question = state['question']
     category = state['category']
+    detected_lang = state.get("detected_lang")
     filter_pinecone_search = {"tags": {"$in": [category.lower()]}}
     documents = None
     answer = document_search_agent.get_answers(question, filter=filter_pinecone_search)
@@ -223,6 +267,7 @@ def rag_retrieval(state, **kwargs):
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'cross_check_needed': False,
             'sender': 'document_search_agent',
             'receiver': 'conversation_agent',
@@ -249,22 +294,24 @@ def rag_retrieval(state, **kwargs):
         return {
             'question': question, 
             'category': category,
+            'detected_lang': detected_lang,
             'documents': documents, 
             'sender': 'document_search_agent', 
             'receiver': 'conversation_agent',
             'cross_check_needed': True
         }
 
-@ls.traceable(langsmith_client, name="faq_agent")
 async def faq_retrieval(state, **kwargs):
     question = state['question']
     category = state['category']
+    detected_lang = state.get("detected_lang")
     filter_pinecone_search = {"tags": {"$in": [category.lower()]}}
     answer = await faq_agent.get_answer(question, category = category, filter=filter_pinecone_search)
     if answer == "Not found":
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'documents': [], 
             'sender': 'faq_agent',
             'receiver': 'document_search_agent',
@@ -288,15 +335,16 @@ async def faq_retrieval(state, **kwargs):
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'documents': documents, 
             'sender': 'faq_agent',
             'receiver': 'conversation_agent',
         }
     
-@ls.traceable(langsmith_client, name="cross_check_agent")
 def cross_check(state, **kwargs):
     question = state['question']
-    state['time_cross_check'] += 1
+    detected_lang = state.get("detected_lang")
+    state['time_cross_check'] = state.get('time_cross_check', 0) + 1
     time_cross_check = state['time_cross_check']
     category = state['category']
     generation = state['generation']
@@ -309,6 +357,7 @@ def cross_check(state, **kwargs):
                 'question': question,
                 'generation': generation,
                 'category': category,
+                'detected_lang': detected_lang,
                 'revise_message': None,
                 'sender': 'cross_check_agent',
                 'receiver': '_end_',
@@ -319,6 +368,7 @@ def cross_check(state, **kwargs):
                 'question': question, 
                 'documents': documents,
                 'category': category,
+                'detected_lang': detected_lang,
                 'time_cross_check': time_cross_check,
                 'revised_message': revised_message,
                 'sender': 'cross_check_agent',
@@ -330,19 +380,21 @@ def cross_check(state, **kwargs):
             'question': question,
             'generation': generation,
             'category': category,
+            'detected_lang': detected_lang,
             'sender': 'cross_check_agent',
             'receiver': '_end_',
         }
         
-@ls.traceable(langsmith_client, name="crs_links_agent")
 def crs_agent(state, **kwargs):
     question = state['question']
     category = state['category']
+    detected_lang = state.get("detected_lang")
     crs_links = crs_links_agent.get_recommendations(question)
     if crs_links == "No recommendations found":
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'request_user': "No recommendations found. Please ask user for more details.",
             'sender': 'crs_links_agent',
             'receiver': 'conversation_agent'
@@ -351,66 +403,65 @@ def crs_agent(state, **kwargs):
         return {
             'question': question,
             'category': category,
+            'detected_lang': detected_lang,
             'crs_links': crs_links,
             'sender': 'crs_links_agent',
             'receiver': 'conversation_agent'
         }
     
-immigration_graph = StateGraph(GraphState)
+def _build_graph():
+    from langgraph.graph import StateGraph, END, START
+    immigration_graph = StateGraph(GraphState)
 
-# Define the nodes
-#! Wait for the decision agent, crs agent
-immigration_graph.add_node("conversation_agent", conversation_agent)
-immigration_graph.add_node("document_search_agent", rag_retrieval)
-immigration_graph.add_node("faq_agent", faq_retrieval)
-immigration_graph.add_node("cross_check_agent", cross_check)
-immigration_graph.add_node("decision_agent", decision_agent)
-immigration_graph.add_node("crs_links_agent", crs_agent)
+    # Define the nodes
+    immigration_graph.add_node("conversation_agent", conversation_agent)
+    immigration_graph.add_node("document_search_agent", rag_retrieval)
+    immigration_graph.add_node("faq_agent", faq_retrieval)
+    immigration_graph.add_node("cross_check_agent", cross_check)
+    immigration_graph.add_node("decision_agent", decision_agent)
+    immigration_graph.add_node("crs_links_agent", crs_agent)
 
-# Build the graph
-immigration_graph.add_edge(START, "conversation_agent")
-immigration_graph.add_conditional_edges(
-    "conversation_agent",
-    lambda state: state['receiver'],
-    {
-        "decision_agent": "decision_agent",
-        "cross_check_agent": "cross_check_agent",
-        '_end_': END
-    }
-)
+    # Build the graph
+    immigration_graph.add_edge(START, "conversation_agent")
+    immigration_graph.add_conditional_edges(
+        "conversation_agent",
+        lambda state: state['receiver'],
+        {
+            "decision_agent": "decision_agent",
+            "cross_check_agent": "cross_check_agent",
+            '_end_': END
+        }
+    )
 
-immigration_graph.add_conditional_edges(
-    "decision_agent",
-    lambda state: state['receiver'],
-    {
-        "faq_agent": "faq_agent",
-        "crs_links_agent": "crs_links_agent"
-    }
-)
+    immigration_graph.add_conditional_edges(
+        "decision_agent",
+        lambda state: state['receiver'],
+        {
+            "faq_agent": "faq_agent",
+            "crs_links_agent": "crs_links_agent"
+        }
+    )
 
-immigration_graph.add_conditional_edges(
-    "faq_agent",
-    lambda state: state['receiver'],
-    {
-        "document_search_agent": "document_search_agent",
-        "conversation_agent": "conversation_agent"
-    }
-)
-immigration_graph.add_conditional_edges(
-    "cross_check_agent",
-    lambda state: state['receiver'],
-    {
-        "conversation_agent": "conversation_agent",
-        "_end_": END
-    }
-)
+    immigration_graph.add_conditional_edges(
+        "faq_agent",
+        lambda state: state['receiver'],
+        {
+            "document_search_agent": "document_search_agent",
+            "conversation_agent": "conversation_agent"
+        }
+    )
+    immigration_graph.add_conditional_edges(
+        "cross_check_agent",
+        lambda state: state['receiver'],
+        {
+            "conversation_agent": "conversation_agent",
+            "_end_": END
+        }
+    )
 
-immigration_graph.add_edge("crs_links_agent", "conversation_agent")
-immigration_graph.add_edge("document_search_agent", "conversation_agent")
-
-
-
-agents = immigration_graph.compile(checkpointer=memory)
+    immigration_graph.add_edge("crs_links_agent", "conversation_agent")
+    immigration_graph.add_edge("document_search_agent", "conversation_agent")
+    return immigration_graph.compile(checkpointer=memory)
 
 # #Get image bytes from the graph
 # img_bytes = agents.get_graph().draw_mermaid_png()
@@ -425,16 +476,17 @@ agents = immigration_graph.compile(checkpointer=memory)
 # plt.axis("off")  # Hide axes
 # plt.show()
 
-config = {"configurable": {"thread_id": '1'}} # Add thread_id to the config, must be unique for each conversation
-inputs = {}
-
-
 async def run_agent(user_input, iris_id = "1"):
-    inputs['sender'] = "user"
-    inputs['question'] = user_input
-    config['configurable']['thread_id'] = iris_id
+    inputs = {
+        'sender': "user",
+        'question': user_input,
+        'detected_lang': None,
+    }
+    config = {"configurable": {"thread_id": iris_id}}
+    graph = get_graph()
+    detected_lang = None
     try:
-        async for output in agents.astream(inputs, config):
+        async for output in graph.astream(inputs, config):
             try:
                 logging.info("\nOutput from the agent: ")
                 logging.critical(output)
@@ -442,12 +494,10 @@ async def run_agent(user_input, iris_id = "1"):
                 if 'conversation_agent' in output.keys():
                     if output['conversation_agent']['receiver'] == '_end_':
                         if 'generation' in output['conversation_agent'].keys():
+                                detected_lang = output['conversation_agent'].get('detected_lang')
                                 generation = output['conversation_agent']['generation']
-                                if "<|im_start|>assistant" in generation:
-                                    generation = generation.split("<|im_start|>assistant")[1]
-                                if "<|im_end|>" in generation:
-                                    generation = generation.split("<|im_end|>")[0]
-                                if detected_lang == "fr":
+                                generation = clean_generation(generation)
+                                if detected_lang == "fr" and translator:
                                     output = await translator.translate(generation, src='en', dest='fr')
                                     yield output.text
                                 else:
@@ -456,11 +506,14 @@ async def run_agent(user_input, iris_id = "1"):
                         continue
                 elif 'cross_check_agent' in output.keys():
                     if output['cross_check_agent']['receiver'] != 'conversation_agent':
-                        if detected_lang == "fr":
-                            output = await translator.translate(output['cross_check_agent']['generation'], src='en', dest='fr')
+                        detected_lang = output['cross_check_agent'].get('detected_lang')
+                        generation = output['cross_check_agent']['generation']
+                        generation = clean_generation(generation)
+                        if detected_lang == "fr" and translator:
+                            output = await translator.translate(generation, src='en', dest='fr')
                             yield output.text
                         else:
-                            yield output['cross_check_agent']['generation']
+                            yield generation
                     else:
                         continue
                 else:
@@ -494,7 +547,7 @@ async def run_agent(user_input, iris_id = "1"):
 #                         generation = output['conversation_agent']['generation']
 #                         if "<|im_start|>assistant" in generation:
 #                             generation = generation.split("<|im_start|>assistant")[1]
-#                         if detected_lang == "fr":
+#                         if detected_lang == "fr" and translator:
 #                             output = await translator.translate(generation, src='en', dest='fr')
 #                             print(output.text)
 #                         else:
@@ -517,7 +570,7 @@ async def run_agent(user_input, iris_id = "1"):
 #                     if output['cross_check_agent']['receiver'] == 'conversation_agent':
 #                         print(output['cross_check_agent']['revised_message'])
 #                     else:
-#                         if detected_lang == "fr":
+#                         if detected_lang == "fr" and translator:
 #                             output = await translator.translate(output['cross_check_agent']['generation'], src='en', dest='fr')
 #                             print(output.text)
 #                         else:
