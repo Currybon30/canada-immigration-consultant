@@ -8,7 +8,7 @@ from controllers.faq_kmeans import cluster_faqs_pipeline, get_total_unclustered_
 
 router = APIRouter(prefix="/api")
 
-@router.post("/create-faq")
+@router.post("/faqs/create-faq")
 async def create_faq(request: Request, faq_docs: List[dict] = Body(...), mongo_db_faq_ids: List[str] = Body([]), index_name: str = Body('faqs'), x_api_key: str = Depends(validate_admin_api_key)):
     if not x_api_key:
         return JSONResponse({'error': 'Invalid API Key'}, status_code=401)

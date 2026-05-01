@@ -4,11 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import dotenv
 import os
 from views.faq_saving import router as faq_saving_router
-from views.pdf_saving import router as pdf_saving_router
+from views.pdf_saving import router as pdf_saving_router #
 from views.login import router as login_router
 from views.signup import router as signup_router
-from views.manage_accounts import router as manage_accounts_router
-from views.security import router as security_router
+from views.manage_accounts import router as manage_accounts_router #
+from views.security import router as security_router #
 # from views.chatbot import router as chatbot_router
 
 
