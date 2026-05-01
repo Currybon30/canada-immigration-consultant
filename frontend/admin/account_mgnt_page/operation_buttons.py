@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-
 import streamlit as st
 from screens import SECURITY_PAGE, ACCOUNT_MGNT_PAGE
 

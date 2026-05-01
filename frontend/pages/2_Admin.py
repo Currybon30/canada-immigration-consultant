@@ -1,8 +1,3 @@
-import os 
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import streamlit as st
 from admin_stuff.pdf_upload_pages.upload_pdf_page import upload_pdf_page
 from admin_stuff.login_signup.login_page import login_page
