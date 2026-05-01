@@ -38,7 +38,8 @@ International students often struggle to navigate legal documents, frequent poli
 
 Live Demo: https://iris-canada.streamlit.app/
 
-<img width="1919" height="1012" alt="Screenshot 2026-05-01 152054" src="https://github.com/user-attachments/assets/651950ca-7e32-4adf-ac23-0f103e6e9836" />
+<img width="1919" height="1016" alt="Screenshot 2026-05-01 170403" src="https://github.com/user-attachments/assets/0dac7d7a-46e2-4369-9bec-5d213a04bb2e" />
+
 
 
 **Note:** 
