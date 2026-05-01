@@ -1,9 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.getcwd(), 'immigration-consultant-capstone'))
-
 from fastapi import APIRouter, Depends, Request, Body
 from config.mypinecone import MyPinecone
 from auth.admin_api_validation import validate_admin_api_key

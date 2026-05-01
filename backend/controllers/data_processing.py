@@ -1,8 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.getcwd()))
-
 from tools.clean_text_lv2 import clean_content_Level2
 from langchain.schema import Document
 import re

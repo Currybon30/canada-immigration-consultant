@@ -1,10 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.getcwd(), 'immigration-consultant-capstone'))
-
-
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from models.user import User

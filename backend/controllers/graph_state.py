@@ -1,8 +1,4 @@
-import sys
 import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from typing import TypedDict, List, Optional
 from langgraph.graph import StateGraph, END, START
 from controllers.agents.document_search_agent import DocumentSearchAgent

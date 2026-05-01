@@ -2,12 +2,7 @@
 This file contains the functions that are used to save the querries to build FAQs.
 Any querries that are not matched with the existing FAQs are saved in the database.
 """
-import os
-import sys
 from bson import ObjectId
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from models.history_query import HistoryQuery
 from config.mongodb import get_history_query_collection
 

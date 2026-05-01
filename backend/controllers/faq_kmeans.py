@@ -1,13 +1,7 @@
-import sys
-import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.path.dirname(__file__)))
-
 from models.kmeans_clustering import KMeansClustering
 from config.mypinecone import MyPinecone
 from typing import List
-from query_saving import get_queries_unclustered_by_category, update_queries, delete_queries
+from controllers.query_saving import get_queries_unclustered_by_category, update_queries, delete_queries
 import json
 
 async def get_total_unclustered_queries(category: str):

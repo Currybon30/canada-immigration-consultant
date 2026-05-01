@@ -1,10 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.getcwd(), 'immigration-consultant-capstone'))
-
-
 from fastapi import File, UploadFile, Form, APIRouter, Depends, Body, Request
 from config.mypinecone import MyPinecone
 from fastapi.responses import JSONResponse

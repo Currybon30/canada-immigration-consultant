@@ -1,9 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(os.path.join(os.getcwd(), 'immigration-consultant-capstone'))
-
 from fastapi import status, APIRouter, Body
 from fastapi.responses import JSONResponse
 import asyncio
@@ -27,6 +21,3 @@ async def chat_endpoint(iris_id: str = None, user_input: str = ""):
     async for response in run_agent(user_input, iris_id):
         agent_response = response
     return JSONResponse(status_code=status.HTTP_200_OK, content={"agent_response": agent_response})
-    
-    
-            
