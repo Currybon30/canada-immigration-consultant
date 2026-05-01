@@ -10,7 +10,7 @@ st.set_page_config(
         initial_sidebar_state="collapsed"
 )
 st.logo(
-    "static/iris-side.png",
+    "frontend/static/iris-side.png",
     size="large"
 )
 
@@ -28,9 +28,9 @@ def read_css():
     with open(css_path, "r") as file:
         st.markdown(f"<style>{file.read()}</style>", unsafe_allow_html=True)
 def main_content():
-    logo_path = "static/IRIS.png"
+    logo_path = "frontend/static/IRIS.png"
     logo = base64.b64encode(open(logo_path, 'rb').read()).decode()
-    background_path = "static/bg.png"
+    background_path = "frontend/static/bg.png"
     background = base64.b64encode(open(background_path, 'rb').read()).decode()
     st.markdown(f"""
         <style>

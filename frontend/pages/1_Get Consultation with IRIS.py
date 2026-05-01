@@ -14,7 +14,7 @@ st.set_page_config(
         layout="wide"
 )
 st.logo(
-    "static/iris-side.png",
+    "frontend/static/iris-side.png",
     size="large"
 )
 
