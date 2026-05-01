@@ -38,7 +38,10 @@ International students often struggle to navigate legal documents, frequent poli
 
 Live Demo: https://iris-canada.streamlit.app/
 
-**Note:** This is a demonstration deployment. Usage may be rate-limited.
+**Note:** 
+- Designed for demonstration purposes; usage may be rate-limited
+- Hosted on a free-tier cloud service  
+- May experience cold starts after periods of inactivity 
 
 ### Installation
 <b><i>1. Clone the repository: </i></b>
