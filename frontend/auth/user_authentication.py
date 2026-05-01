@@ -8,7 +8,7 @@ import jwt
 def on_logout():
     ssbs = SessionStorage()
     session = session_manager.get_session()
-    response = session.post("https://canada-immigration-consultant.onrender.comauth/logout")
+    response = session.post("http://127.0.0.1:8000auth/logout")
     if response.status_code == 200:
         ssbs.deleteItem("saved_session_data")
         st.session_state.page = LOGIN_PAGE

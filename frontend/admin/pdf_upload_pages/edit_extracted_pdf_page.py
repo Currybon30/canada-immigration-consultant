@@ -108,7 +108,7 @@ def on_save_changes(ofc_doc_id, docs):
         st.session_state.error = False
         try:
             session = session_manager.get_session()
-            response = session.post("https://canada-immigration-consultant.onrender.com/api/save-pdf-to-pinecone", headers=headers, json=data)
+            response = session.post("http://127.0.0.1:8000/api/save-pdf-to-pinecone", headers=headers, json=data)
             st.session_state.backend_response = response.json()
             if response.status_code != 201:
                 st.session_state.error = True

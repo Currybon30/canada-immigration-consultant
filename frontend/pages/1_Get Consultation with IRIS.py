@@ -132,7 +132,7 @@ def get_iris_id():
         st.session_state.connection_error = None
         
     try:
-        response = requests.get("https://canada-immigration-consultant.onrender.com/api/iris-id")
+        response = requests.get("http://127.0.0.1:8000/api/iris-id")
     except requests.exceptions.ConnectionError:
         st.session_state.connection_error = st.error("Trying to connect to server.\n\nTentative de connexion au serveur.")
         time.sleep(15)
@@ -147,7 +147,7 @@ async def get_iris_response(input):
         st.error("Error: Could not connect to IRIS")
         return
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://canada-immigration-consultant.onrender.com/iris/{st.session_state.iris_id}?user_input={input}") as response:
+        async with session.get(f"http://127.0.0.1:8000/iris/{st.session_state.iris_id}?user_input={input}") as response:
             response = await response.json()
             response = response["agent_response"]
             # Clean up response

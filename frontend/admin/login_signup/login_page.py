@@ -41,7 +41,7 @@ def on_submit(username, password):
         "password": password
     }
     session = session_manager.get_session()
-    response = session.post("https://canada-immigration-consultant.onrender.com/auth/login", data=form_data)
+    response = session.post("http://127.0.0.1:8000/auth/login", data=form_data)
     if response.status_code == 200:
         cookies = session.cookies.get_dict()
         token = cookies.get("access_token")
