@@ -19,20 +19,20 @@ app.add_middleware(
 
 
 MONGO_URI = os.getenv('MONGO_URI')
-if not MONGO_URI:
-    raise ValueError("MONGO_URI is not set in environment variables")
 
-mongo_client = AsyncIOMotorClient(MONGO_URI)
+mongo_client = None
+if MONGO_URI:
+    mongo_client = AsyncIOMotorClient(MONGO_URI)
+else:
+    print("WARNING: MONGO_URI not set")
     
     
 @app.on_event("shutdown")
 def close_connection():
-    print("Closing MongoDB connection...")
-    mongo_client.close()
+    if mongo_client:
+        mongo_client.close()
+
 
 @app.get("/")
 def health_check():
-    if db is not None:
-        return {"status": "ok"}
-    else:
-        raise HTTPException(status_code=500, detail="Database connection is not established")
+    return {"status": "ok"}

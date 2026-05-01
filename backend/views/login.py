@@ -26,7 +26,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], resp
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,  # Set to False for localhost testing
+        secure=True,  # Set to False for localhost testing
         samesite="None",
         expires=datetime.now(timezone.utc) + access_token_expires
     )
