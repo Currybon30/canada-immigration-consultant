@@ -1,4 +1,4 @@
-from fastapi import status, APIRouter
+from fastapi import status, APIRouter, Query
 from fastapi.responses import JSONResponse
 import uuid
 
@@ -11,7 +11,7 @@ def get_iris_id():
     return {"iris_id": original_iris_id}
 
 @router.get("/iris/{iris_id}")
-async def chat_endpoint(iris_id: str = None, user_input: str = ""):
+async def chat_endpoint(iris_id: str, user_input: str = Query("")):
     from controllers.graph_state import run_agent
 
     if iris_id is None or iris_id != original_iris_id or iris_id == "":

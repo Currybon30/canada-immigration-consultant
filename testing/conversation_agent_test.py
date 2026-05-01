@@ -39,7 +39,7 @@ class TestConversationAgent(unittest.IsolatedAsyncioTestCase):
         # Set up the necessary attributes and mocks
         self.agent.translator = AsyncMock()
         self.agent.chat = MagicMock()
-        self.agent.model_name = "mistralai/Mistral-7B-Instruct-v0.3"
+        self.agent.model_name = "katanemo/Arch-Router-1.5B"
         self.agent.history = []
         
         # Implement handle_user_request with proper input validation

@@ -530,58 +530,47 @@ async def run_agent(user_input, iris_id = "1"):
         yield "An error occurred. Please try again."
         
 
+###################### TEST GRAPH ##############################
+# import asyncio
+
+# graph = get_graph()
+# config = {"configurable": {"thread_id": "test"}}
+
 # async def main():
 #     while True:
-#         try:
-#             print("\n\n")
-#             user_input = input("Enter your question: ")
-#             if user_input == "q":
-#                 print("Goodbye!")
-#                 break
-#             inputs['question'] = user_input
-#             inputs['sender'] = "user"
-#             async for output in agents.astream(inputs, config):
-#                 print(output)
-#                 if 'conversation_agent' in output.keys():
-#                     if 'generation' in output['conversation_agent'].keys():
-#                         generation = output['conversation_agent']['generation']
-#                         if "<|im_start|>assistant" in generation:
-#                             generation = generation.split("<|im_start|>assistant")[1]
-#                         if detected_lang == "fr" and translator:
-#                             output = await translator.translate(generation, src='en', dest='fr')
-#                             print(output.text)
-#                         else:
-#                             print(generation)
-#                     else:
-#                         print("The question has been given to decision agent.")
-#                 elif 'decision_agent' in output.keys():
-#                     print(output['decision_agent']['category'])
-#                 elif 'faq_agent' in output.keys():
-#                     if output['faq_agent']['documents'] == []:
-#                         print("No answer found in FAQ. Handled by Document Search Agent.")
-#                     else:
-#                         print(output['faq_agent']['documents']['page_content'])
-#                 elif 'document_search_agent' in output.keys():
-#                     if 'documents' in output['document_search_agent'].keys():
-#                         print("Answer found") # Because of the length of the answer, it is not printed here.
-#                     else:
-#                         print(output['document_search_agent']['request_user'])
-#                 elif 'cross_check_agent' in output.keys():
-#                     if output['cross_check_agent']['receiver'] == 'conversation_agent':
-#                         print(output['cross_check_agent']['revised_message'])
-#                     else:
-#                         if detected_lang == "fr" and translator:
-#                             output = await translator.translate(output['cross_check_agent']['generation'], src='en', dest='fr')
-#                             print(output.text)
-#                         else:
-#                             print(output['cross_check_agent']['generation'])
-#                 elif 'crs_links_agent' in output.keys():
-#                     if 'crs_links' in output['crs_links_agent'].keys():
-#                         print(output['crs_links_agent']['crs_links'])
-#                     else:
-#                         print(output['crs_links_agent']['request_user'])
-#         except Exception as e:
-#             print(e)
+#         user_input = await asyncio.to_thread(input, "Enter your question: ")
+
+#         if user_input == "q":
+#             print("Goodbye!")
 #             break
+
+#         inputs = {
+#             "question": user_input,
+#             "sender": "user",
+#             "detected_lang": None,
+#         }
+
+#         async for output in graph.astream(inputs, config):
+
+#             if not output:
+#                 continue
+
+#             for node, data in output.items():
+
+#                 if node == "conversation_agent" and "generation" in data:
+#                     generation = data["generation"]
+
+#                     if data.get("detected_lang") == "fr" and translator:
+#                         translated = await translator.translate(generation, src="en", dest="fr")
+#                         print(translated.text)
+#                     else:
+#                         print(generation)
+
+#                 elif node == "decision_agent":
+#                     print(data.get("category"))
+
+#                 elif node == "faq_agent":
+#                     docs = data.get("documents")
+#                     print(docs.get("page_content") if docs else "No answer found")
 
 # asyncio.run(main())

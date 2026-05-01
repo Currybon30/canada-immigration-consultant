@@ -28,7 +28,7 @@ class ConversationAgent:
         self.HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         self.max_tokens = max_tokens
         self.temperature = temperature
-        self.model_name = "mistralai/Mistral-7B-Instruct-v0.3"
+        self.model_name = "katanemo/Arch-Router-1.5B"
         
         
         self.initialize_model()
@@ -67,7 +67,7 @@ class ConversationAgent:
         
     def initialize_model(self):
         print(self.model_name)
-        if self.model_name == "mistralai/Mistral-7B-Instruct-v0.3":
+        if self.model_name == "katanemo/Arch-Router-1.5B":
             # Primary model initialization
             self.llm = HuggingFaceEndpoint(
                 repo_id=self.model_name,
@@ -180,6 +180,7 @@ class ConversationAgent:
         # Send the classification request to the LLM
         try:
             response = self.chat.invoke([HumanMessage(content=classification_prompt)])
+            # print(response)
         except Exception as e:
             print("Cannot connect to Mistral, trying Qwen model...")
             self.model_name = LOCAL_MODEL_NAME
