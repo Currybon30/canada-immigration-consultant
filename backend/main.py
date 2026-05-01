@@ -15,6 +15,6 @@ app.include_router(manage_accounts_router)
 app.include_router(security_router)
 app.include_router(chatbot_router)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="127.0.0.1", port=8000)
