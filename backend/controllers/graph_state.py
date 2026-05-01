@@ -26,10 +26,14 @@ warnings.filterwarnings("ignore")
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT")
+USE_LOCAL_MODEL = os.getenv("USE_LOCAL_MODEL", "false").lower() == "true"
 
-print("Loading local LLM...")
-ConversationAgent.load_local_model()
-print("Local LLM loaded successfully")
+if USE_LOCAL_MODEL:
+    print("Loading local LLM...")
+    ConversationAgent.load_local_model()
+    print("Local LLM loaded successfully")
+else:
+    print("Skipping local LLM (using API)")
 
 memory = MemorySaver()
 langsmith_client = ls.Client(api_url=LANGSMITH_ENDPOINT, api_key=LANGSMITH_API_KEY)

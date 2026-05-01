@@ -12,6 +12,9 @@ import torch
 # Load environment variables
 load_dotenv()
 
+USE_LOCAL_MODEL = os.getenv("USE_LOCAL_MODEL", "false").lower() == "true"
+LOCAL_MODEL_NAME = os.getenv("LOCAL_MODEL_NAME")
+
 class ConversationAgent:
     """Main agent responsible for handling multi-agent communication."""
     local_tokenizer = None
@@ -35,9 +38,23 @@ class ConversationAgent:
         
     @classmethod
     def load_local_model(cls):
+        if not USE_LOCAL_MODEL:
+            print("Local model disabled. Skipping load.")
+            return
+
+        if cls.local_model is not None:
+            return  # already loaded
+
         try:
-            cls.local_model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-3B-Instruct", device_map="auto")
-            cls.local_tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-3B-Instruct")
+            print("Loading local model...")
+            cls.local_model = AutoModelForCausalLM.from_pretrained(
+                LOCAL_MODEL_NAME,
+                device_map="auto"
+            )
+            cls.local_tokenizer = AutoTokenizer.from_pretrained(
+                LOCAL_MODEL_NAME
+            )
+            print("Local model loaded successfully")
         except Exception as e:
             print("Failed to load local model.")
             raise e
@@ -60,7 +77,7 @@ class ConversationAgent:
             )
             self.chat = ChatHuggingFace(llm=self.llm, verbose=True)
         
-        elif self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        elif self.model_name == LOCAL_MODEL_NAME:
             # Fallback model initialization
             self.llm_model = pipeline(
                 "text-generation",
@@ -165,7 +182,7 @@ class ConversationAgent:
             response = self.chat.invoke([HumanMessage(content=classification_prompt)])
         except Exception as e:
             print("Cannot connect to Mistral, trying Qwen model...")
-            self.model_name = "Qwen/Qwen2.5-3B-Instruct"
+            self.model_name = LOCAL_MODEL_NAME
             self.initialize_model()
             response = self.chat.invoke([HumanMessage(content=classification_prompt)])
 
@@ -179,7 +196,7 @@ class ConversationAgent:
         reason_for_revision = "No explanation provided."
         
         
-        if self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        if self.model_name == LOCAL_MODEL_NAME:
             try:
                 if "<|im_start|>assistant" in llm_output:
                     llm_output = llm_output.split("<|im_start|>assistant")[1].strip()
@@ -331,7 +348,7 @@ class ConversationAgent:
         reason = "No explanation provided."
         
         
-        if self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        if self.model_name == LOCAL_MODEL_NAME:
             if "<|im_start|>assistant" in llm_output:
                 llm_output = llm_output.split("<|im_start|>assistant")[1].strip()
                 if "Reformatted Response:" in llm_output:
@@ -405,7 +422,7 @@ class ConversationAgent:
 
         reformated_response = None
         
-        if self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        if self.model_name == LOCAL_MODEL_NAME:
             if "<|im_start|>assistant" in llm_output:
                 llm_output = llm_output.split("<|im_start|>assistant")[1].strip()
                 if "Reformatted Response:" in llm_output:
@@ -490,7 +507,7 @@ class ConversationAgent:
         # print(f"LLM Output: {llm_output}")
 
         # Extract reformatted response safely
-        if self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        if self.model_name == LOCAL_MODEL_NAME:
             if "<|im_start|>assistant" in llm_output:
                 llm_output = llm_output.split("<|im_start|>assistant")[1].strip()
                 if "Reformatted Response:" in llm_output:
@@ -580,7 +597,7 @@ class ConversationAgent:
         # print(f"LLM Output: {llm_output}")
 
         # Extract reformatted response safely
-        if self.model_name == "Qwen/Qwen2.5-3B-Instruct":
+        if self.model_name == LOCAL_MODEL_NAME:
             if "<|im_start|>assistant" in llm_output:
                 llm_output = llm_output.split("<|im_start|>assistant")[1].strip()
                 if "Reformatted Response:" in llm_output:

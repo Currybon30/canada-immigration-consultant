@@ -15,7 +15,6 @@ import dotenv
 dotenv.load_dotenv()
 
 router = APIRouter(prefix="/api")
-admin_api_key = os.getenv('ADMIN_API_KEY')
 
 
 # Function to receive PDF file
