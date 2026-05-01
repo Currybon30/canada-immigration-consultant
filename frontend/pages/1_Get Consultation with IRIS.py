@@ -132,11 +132,10 @@ def get_iris_id():
         st.session_state.connection_error = None
         
     try:
-        response = requests.get("https://l7f99zws-8000.use.devtunnels.ms/api/iris-id")
+        response = requests.get("https://l7f99zws-8000.use.devtunnels.ms/api/iris-id", timeout=5)
     except requests.exceptions.ConnectionError:
         st.session_state.connection_error = st.error("Trying to connect to server.\n\nTentative de connexion au serveur.")
         time.sleep(15)
-        get_iris_id()
         return
     if 'iris_id' not in st.session_state:
         st.session_state.iris_id = response.json()["iris_id"]
