@@ -16,8 +16,6 @@ from auth.user_authentication import is_super_admin
 
 dotenv.load_dotenv()
 
-
-
 def account_mgnt_page():
     st.title("Account Management")
     st.sidebar.button("⬅ Back", on_click=go_back)
