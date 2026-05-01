@@ -1,11 +1,14 @@
 # Canadian Immigration Consultant Chatbot 🍁🤖
 
 ## Table of Contents
-- [Project Description](#project-description)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributors](#contributors)
-- [License](#license)
+- [Canadian Immigration Consultant Chatbot 🍁🤖](#canadian-immigration-consultant-chatbot-)
+  - [Table of Contents](#table-of-contents)
+    - [Project Description](#project-description)
+    - [Demo](#demo)
+    - [Installation](#installation)
+    - [Usage](#usage)
+    - [Contributors](#contributors)
+    - [License](#license)
 
 
 ### Project Description
@@ -14,7 +17,7 @@
   <img src="https://github.com/user-attachments/assets/def87a39-ee15-4681-8d68-2c6a364823b4" alt="Image description" width="250"/>
 </p>
 
-**IRIS (Immigration Resources for International Students)** is a full-stack, AI-driven chatbot developed as part of our capstone project at **Centennial College**. Designed to support international students in Canada, IRIS provides real-time, accurate immigration guidance by simplifying complex IRCC (Immigration, Refugees and Citizenship Canada) policies into accessible conversations.
+**IRIS (Immigration Resources for International Students)** is a full-stack AI chatbot that delivers real-time immigration guidance using a Retrieval-Augmented Generation (RAG) system. It enables users to navigate complex IRCC (Immigration, Refugees and Citizenship Canada) policies through a conversational interface backed by a dynamic, searchable knowledge base.
 
 International students often struggle to navigate legal documents, frequent policy updates, and long support wait times. IRIS addresses this gap by offering a reliable, user-friendly solution available 24/7.
 
@@ -30,6 +33,12 @@ International students often struggle to navigate legal documents, frequent poli
 - 🧲 Pinecone – Vector similarity search for document retrieval (RAG)
 - 🍃 MongoDB – NoSQL database for storing user queries, sessions, and logs
 - 🤗 Hugging Face – Pretrained LLMs for natural language understanding and response generation
+
+### Demo
+
+Live Demo: https://canada-immigration-consultant.streamlit.app/
+
+**Note:** This is a demonstration deployment. Usage may be rate-limited.
 
 ### Installation
 <b><i>1. Clone the repository: </i></b>
