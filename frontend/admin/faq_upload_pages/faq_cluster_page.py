@@ -59,7 +59,7 @@ def on_change():
     
     with st.spinner("Please wait..."):
         response = session.get(
-            f'http://localhost:8000/api/faqs/total-number-unclustered-queries?category={category}',
+            f'https://canada-immigration-consultant.onrender.com//api/faqs/total-number-unclustered-queries?category={category}',
             headers={"x-api-key": x_api_key}, cookies={"access_token": token}
         )
     if response.status_code == 200:
@@ -87,7 +87,7 @@ def on_submit(category):
     token = session.cookies.get_dict().get("access_token")
     x_api_key = os.getenv("ADMIN_API_KEY")
     response = session.get(
-        f'http://localhost:8000/api/faqs/kmeans-cluster?category={category}',
+        f'https://canada-immigration-consultant.onrender.com//api/faqs/kmeans-cluster?category={category}',
         headers={"x-api-key": x_api_key}, cookies={"access_token": token}
     )
     if response.status_code == 200:

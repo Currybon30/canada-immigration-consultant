@@ -117,9 +117,9 @@ def on_submit(faq_docs):
     token = session.cookies.get_dict().get("access_token")
     x_api_key = os.getenv("ADMIN_API_KEY")
     if st.session_state.clustered_query == False:
-        response = session.post("http://localhost:8000/api/create-faq", json={"faq_docs": faq_docs}, headers={"x-api-key": x_api_key}, cookies={"access_token": token})
+        response = session.post("https://canada-immigration-consultant.onrender.com//api/create-faq", json={"faq_docs": faq_docs}, headers={"x-api-key": x_api_key}, cookies={"access_token": token})
     else:
-        response = session.post("http://localhost:8000/api/create-faq", json={"faq_docs": faq_docs, "mongo_db_faq_ids": st.session_state.faq_kmeans_docs[0]["ids"]}, headers={"x-api-key": x_api_key}, cookies={"access_token": token})
+        response = session.post("https://canada-immigration-consultant.onrender.com//api/create-faq", json={"faq_docs": faq_docs, "mongo_db_faq_ids": st.session_state.faq_kmeans_docs[0]["ids"]}, headers={"x-api-key": x_api_key}, cookies={"access_token": token})
     if response.status_code == 201:
         success_msg = st.success("FAQs uploaded successfully")
         time.sleep(2)

@@ -52,7 +52,7 @@ def main_content():
         </div>
         <!-- Chat Now Button -->
         <div class="container">
-            <form action="http://localhost:8501/Get_Consultation_with_IRIS">
+            <form action="https://canada-immigration-consultant.streamlit.app/Get_Consultation_with_IRIS">
                 <button class="chat-now-btn" type="submit">
                 <p>CHAT NOW</p>
                 <p>Discutons Maintenant</p>

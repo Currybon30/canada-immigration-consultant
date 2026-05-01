@@ -52,7 +52,7 @@ def change_password(current_password, new_password, confirm_new_password):
     
     session = session_manager.get_session()
     token = session.cookies.get_dict().get("access_token")
-    response = session.put("http://localhost:8000/api/users/update-password", json={"new_password": new_password, "current_password": current_password}, headers={"Authorization": f"Bearer {token}"})
+    response = session.put("https://canada-immigration-consultant.onrender.com//api/users/update-password", json={"new_password": new_password, "current_password": current_password}, headers={"Authorization": f"Bearer {token}"})
     
     if response.status_code == 200:
         st.success("Password updated successfully.")
