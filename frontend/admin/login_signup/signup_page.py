@@ -139,7 +139,7 @@ def on_submit(username, password, confirm_password, first_name, last_name, middl
         "x-api-key": x_api_key
     }
     
-    response = session.post("http://127.0.0.1:8000/auth/signup", json=user, headers=headers, cookies={"access_token": token})
+    response = session.post("https://l7f99zws-8000.use.devtunnels.ms/auth/signup", json=user, headers=headers, cookies={"access_token": token})
     
     if response.status_code == 201:
         success_msg = st.success("User created successfully.")

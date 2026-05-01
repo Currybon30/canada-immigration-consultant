@@ -21,7 +21,7 @@ def display_accounts():
     x_api_key = os.getenv("ADMIN_API_KEY")
     session = session_manager.get_session()
     token = session.cookies.get_dict().get("access_token")
-    response = session.get("http://127.0.0.1:8000/api/users", headers={"x-api-key": x_api_key, "Authorization": f"Bearer {token}"})
+    response = session.get("https://l7f99zws-8000.use.devtunnels.ms/api/users", headers={"x-api-key": x_api_key, "Authorization": f"Bearer {token}"})
     
     if response.status_code == 403 or response.status_code == 401:
         st.error("Unauthorized access. Please login again.")
