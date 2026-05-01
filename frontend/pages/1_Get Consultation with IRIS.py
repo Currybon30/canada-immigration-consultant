@@ -136,18 +136,12 @@ def get_iris_id():
             "https://l7f99zws-8000.use.devtunnels.ms/api/iris-id",
             timeout=5
         )
-        
-        st.write("Content-Type:", response.headers.get("content-type"))
-        st.write("Raw response text:")
-        st.code(response.text)
 
-        # 🔥 ADD THIS CHECK
         if response.status_code != 200:
             st.error(f"Backend error: {response.status_code}")
             st.write(response.text)
             return
 
-        # 🔥 SAFE JSON PARSE
         data = response.json()
 
         if "iris_id" not in data:
