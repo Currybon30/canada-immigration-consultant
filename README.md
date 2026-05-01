@@ -36,7 +36,7 @@ International students often struggle to navigate legal documents, frequent poli
 
 ### Demo
 
-Live Demo: https://canada-immigration-consultant.streamlit.app/
+Live Demo: https://iris-canada.streamlit.app/
 
 **Note:** This is a demonstration deployment. Usage may be rate-limited.
 
