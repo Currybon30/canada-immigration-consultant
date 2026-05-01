@@ -11,7 +11,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "https://localhost:8501"],
+    allow_origins=["http://localhost:8501", "https://localhost:8501", "https://canada-immigration-consultant.streamlit.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
