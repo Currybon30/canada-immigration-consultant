@@ -2,7 +2,7 @@ import streamlit as st
 from screens import *
 from streamlit_session_browser_storage import SessionStorage
 from Home import session_manager
-from operation_buttons import reset_password_button, delete_account_button, change_password_button
+from admin.account_mgnt_page.operation_buttons import reset_password_button, delete_account_button, change_password_button
 import dotenv
 import os
 from auth.user_authentication import is_super_admin
