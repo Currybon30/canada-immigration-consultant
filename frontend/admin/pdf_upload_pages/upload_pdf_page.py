@@ -124,7 +124,7 @@ def on_submit(option, update_pdf_id, category, skip_tags, inline_txt_removed, up
         with st.spinner("PDF is being processed..."):
             try:
                 session = session_manager.get_session()
-                response = session.post("https://l7f99zws-8000.use.devtunnels.ms/api/upload-pdf", headers=headers, files=file, data=data)
+                response = session.post("https://canada-immigration-consultant.onrender.com/api/upload-pdf", headers=headers, files=file, data=data)
                 st.session_state.backend_response = response.json()
                 if response.status_code != 201:
                     st.session_state.error = True
