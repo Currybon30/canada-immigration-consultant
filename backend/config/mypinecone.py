@@ -11,7 +11,12 @@ dotenv.load_dotenv()
 class MyPinecone:
     def __init__(self):
         self.__api_key = os.getenv("PINECONE_API_KEY")
+
+        if not self.__api_key:
+            raise ValueError("PINECONE_API_KEY missing")
+
         self.pinecone_client = Pinecone(api_key=self.__api_key)
+
         self.embedding_model = HuggingFaceEmbeddings(model_name = "all-MiniLM-L6-v2")
      
     def list_index_names(self):

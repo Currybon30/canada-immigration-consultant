@@ -2,16 +2,14 @@ import dotenv
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
-
 dotenv.load_dotenv()
 
-
-MONGO_URI = os.getenv('MONGO_URI')
-client = AsyncIOMotorClient(MONGO_URI)
+MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
     raise ValueError("MONGO_URI is not set in environment variables")
-print("Connected to MongoDB")
+
+client = AsyncIOMotorClient(MONGO_URI)
 
 db = client["immigration-db"]
 history_query_collection = db["history_queries"]

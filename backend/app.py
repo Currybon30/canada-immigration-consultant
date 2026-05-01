@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi.middleware.cors import CORSMiddleware
-from config.mongodb import db
 import dotenv
 import os
 from views.faq_saving import router as faq_saving_router
@@ -18,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "https://localhost:8501", "https://canada-immigration-consultant.streamlit.app"],
+    allow_origins=["http://localhost:8501", "https://localhost:8501", "https://iris-canada.streamlit.app"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "Authorization"],
