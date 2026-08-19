@@ -163,8 +163,6 @@ def get_iris_id():
         st.session_state.connection_error = st.error("Trying to connect to server.\n\nTentative de connexion au serveur.")
         time.sleep(15)
         return
-    if 'iris_id' not in st.session_state:
-        st.session_state.iris_id = response.json()["iris_id"]
         
 
 async def get_iris_response(input):
