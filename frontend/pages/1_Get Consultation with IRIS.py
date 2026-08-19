@@ -1,17 +1,16 @@
-import streamlit as st
-import requests
-import json
 import asyncio
-import aiohttp
-import time
+import json
 import re
+import time
 
-
+import aiohttp
+import requests
+import streamlit as st
 
 st.set_page_config(
-        page_title="IRIS",
-        page_icon="🍁",
-        layout="wide"
+    page_title="IRIS",
+    page_icon="🍁",
+    layout="wide"
 )
 st.logo(
     "frontend/static/iris-side.png",
@@ -52,66 +51,70 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-WELCOME_MESSAGE = """Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\n
-
-                    Bonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.
+WELCOME_MESSAGE = """
+                Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n
+                Bonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.
                 """
 
 if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "text": WELCOME_MESSAGE,
-                "avatar": "🤖"
-            }
-        ]
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "text": WELCOME_MESSAGE,
+            "avatar": "🤖"
+        }
+    ]
+
 
 def get_consultation_page():
     if 'iris_id' not in st.session_state:
         st.session_state.iris_id = None
-    
+
     if st.session_state.iris_id is None:
         get_iris_id()
-    
+
     st.caption("⚠️ Responses may vary due to external AI model availability.")
-        
+
     if st.session_state.error_chat:
         st.session_state.disabled_chat = True
-        
+
     for message in st.session_state.messages:
         with st.chat_message(message["role"], avatar=message["avatar"]):
             st.markdown(message["text"])
-    
+
     if prompt := st.chat_input("Ask about study permits, PGWP, or visas...", disabled=st.session_state.disabled_chat):
         try:
             if any(word in prompt.lower() for word in ["bye", "goodbye", "exit", "quit", "thank", "thanks"]):
                 with st.chat_message("human", avatar="🧑‍🎓"):
                     st.markdown(prompt)
-                st.session_state.messages.append({"role": "human", "text": prompt, "avatar": "🧑‍🎓"})
-                
+                st.session_state.messages.append(
+                    {"role": "human", "text": prompt, "avatar": "🧑‍🎓"})
+
                 with st.chat_message("assistant", avatar="🤖"):
-                    st.markdown("Please don’t hesitate to use our live chat service again in future – we’re always here to help. I hope to hear from you soon. Take care!")
-                st.session_state.messages.append({"role": "assistant", "text": "Please don’t hesitate to use our live chat service again in future – we’re always here to help. I hope to hear from you soon. Take care!", "avatar": "🤖"})
-                
+                    st.markdown(
+                        "Please don’t hesitate to use our live chat service again in future – we’re always here to help. I hope to hear from you soon. Take care!")
+                st.session_state.messages.append(
+                    {"role": "assistant", "text": "Please don’t hesitate to use our live chat service again in future – we’re always here to help. I hope to hear from you soon. Take care!", "avatar": "🤖"})
+
                 st.session_state.disabled_chat = True
                 return
-            
+
             with st.chat_message("human", avatar="🧑‍🎓"):
                 st.markdown(prompt)
-            st.session_state.messages.append({"role": "human", "text": prompt, "avatar": "🧑‍🎓"})
-            
+            st.session_state.messages.append(
+                {"role": "human", "text": prompt, "avatar": "🧑‍🎓"})
+
             waiting_message = st.empty()
             waiting_message.markdown("IRIS is typing...")
-            
+
             response = asyncio.run(get_iris_response(prompt))
-            
-            
+
             with st.chat_message("assistant", avatar="🤖"):
                 waiting_message.empty()
                 st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "text": response, "avatar": "🤖"})
-            
-            
+            st.session_state.messages.append(
+                {"role": "assistant", "text": response, "avatar": "🤖"})
+
         except Exception as e:
             st.session_state.error_chat = True
             st.session_state.disabled_chat = True
@@ -119,24 +122,24 @@ def get_consultation_page():
             st.write("Please refresh the page and try again.")
             return
 
-    
+
 def get_iris_id():
     if 'connection_error' in st.session_state and st.session_state.connection_error is not None:
         st.session_state.connection_error.empty()
         del st.session_state.connection_error
-    
+
     if 'messages' not in st.session_state:
         st.session_state.messages = []
-        
+
     if 'error_chat' not in st.session_state:
         st.session_state.error_chat = False
-    
+
     if 'disabled_chat' not in st.session_state:
         st.session_state.disabled_chat = False
-    
+
     if 'connection_error' not in st.session_state:
         st.session_state.connection_error = None
-        
+
     try:
         response = requests.get(
             "https://canada-immigration-consultant.onrender.com/api/iris-id",
@@ -160,10 +163,11 @@ def get_iris_id():
         st.warning("⏳ Server is waking up... please try again in a few seconds.")
         return
     except requests.exceptions.ConnectionError:
-        st.session_state.connection_error = st.error("Trying to connect to server.\n\nTentative de connexion au serveur.")
+        st.session_state.connection_error = st.error(
+            "Trying to connect to server.\n\nTentative de connexion au serveur.")
         time.sleep(15)
         return
-        
+
 
 async def get_iris_response(input):
     if st.session_state.iris_id is None:
@@ -176,23 +180,23 @@ async def get_iris_response(input):
             # Clean up response
             response = re.sub(r'(?<!\n)\n(?!\n)', '\n\n', response)
             response = re.sub(r'(?<!\\n)\\n(?!\\n)', '\\n\\n', response)
-            
+
             # Remove unintended spaces before line breaks
             response = re.sub(r'\s*\n\s*', '\n', response)
             response = re.sub(r'\s*\\n\s*', '\\n', response)
 
             # Remove surrounding quotes if present
             response = response.strip('"')
-            
+
             # Remove context after ```, if present
             response = re.sub(r'```.*?$', '', response, flags=re.DOTALL)
 
             # Remove triple backticks (```), often used in code blocks
             response = re.sub(r"\s*```+\s*", " ", response).strip()
-            
+
             # Ensure that "Reference:" is followed by a newline
             response = re.sub(r'(\n)(Reference:)', r'\1\n\2', response)
             return response
-        
+
 
 get_consultation_page()
