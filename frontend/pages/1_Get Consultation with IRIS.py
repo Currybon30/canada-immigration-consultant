@@ -68,6 +68,7 @@ if "messages" not in st.session_state:
 
 def get_consultation_page():
     if 'iris_id' not in st.session_state:
+        st.session_state.iris_id = None
         get_iris_id()
     
     st.caption("⚠️ Responses may vary due to external AI model availability.")
