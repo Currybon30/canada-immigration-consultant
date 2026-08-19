@@ -52,8 +52,23 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
+WELCOME_MESSAGE = """Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\n
+
+                    Bonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.
+                """
+
+if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "text": WELCOME_MESSAGE,
+                "avatar": "🤖"
+            }
+        ]
+
 def get_consultation_page():
-    get_iris_id()
+    if 'iris_id' not in st.session_state:
+        get_iris_id()
     
     st.caption("⚠️ Responses may vary due to external AI model availability.")
         
@@ -63,20 +78,6 @@ def get_consultation_page():
     for message in st.session_state.messages:
         with st.chat_message(message["role"], avatar=message["avatar"]):
             st.markdown(message["text"])
-
-    if not any(message["text"] == "Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, I suggest you read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation." for message in st.session_state.messages):
-        
-        time.sleep(1.5)
-        
-        waiting_message = st.empty()
-        waiting_message.markdown("IRIS is typing...")
-        
-        time.sleep(2)
-        
-        waiting_message.empty()
-        with st.chat_message("assistant", avatar="🤖"):
-            st.markdown("Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.")
-        st.session_state.messages.append({"role": "assistant", "text": "Hello! I am IRIS, your virtual assistant. I am here to help you with your queries. Before starting, please read the IRIS Disclaimer in the left sidebar to understand the terms, conditions, and limitations associated with its use.\n\nBonjour ! Je suis IRIS, votre assistante virtuelle. Je suis là pour répondre à vos questions. Avant de commencer, je vous suggère de lire l'avis de non-responsabilité d'IRIS dans la barre latérale gauche pour comprendre les conditions d'utilisation et les limitations liées à son utilisation.", "avatar": "🤖"})
     
     if prompt := st.chat_input("Ask about study permits, PGWP, or visas...", disabled=st.session_state.disabled_chat):
         try:
@@ -192,6 +193,5 @@ async def get_iris_response(input):
             response = re.sub(r'(\n)(Reference:)', r'\1\n\2', response)
             return response
         
-
 
 get_consultation_page()
