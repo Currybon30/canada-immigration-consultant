@@ -56,7 +56,7 @@ git clone https://github.com/Curry091104/immigration-consultant-capstone.git
 <b><i>2. Install dependencies: </i></b>
 
 > - Python version must be 3.11.
-> - To prevent dependency conflicts, it's recommended that separate virtual environment folders for both the front end and back end be created.
+> - To prevent dependency conflicts, it's recommended that separate virtual environment folders for both the frontend and backend be created.
 > - To leverage GPU, after running ```pip install -r requirements.txt```, please run a command to reinstall PyTorch. Check this [link](https://pytorch.org/get-started/locally/) for the installation command.
 
 Frontend
@@ -72,18 +72,33 @@ pip install -r requirements.txt
 ```
 
 ### Usage
-To run the project, use the following command: </br></br>
-
+Please note the following before running the project:
 > - Ensure that your environment is activated before running the command.
 > - Verify that you have a .env file with all required keys.
 > - Run the backend (server) first and let it finish loading, then run the frontend (client).
 
-Backend
+To run the project, use the following command:
+
+<b>Backend</b>
+
+By default, the command below will run on port 8000.
+```
+cd backend
+uvicorn app:app
+```
+---
+Alternatively, if you want to run the backend on a different port. Please follow the steps below:
+
+1. Open the main.py file
+2. Uncomment the code
+3. Change the port number (default is 8000).
+4. Run the command below to start the backend server.
 ```
 cd backend
 uvicorn main:app
 ```
-Frontend
+
+<b>Frontend</b>
 ```
 cd frontend
 streamlit run Home.py
