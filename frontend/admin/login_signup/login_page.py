@@ -1,34 +1,33 @@
-import streamlit as st
-import requests
-from screens import *
-from auth.user_authentication import decode_jwt
-from streamlit_session_browser_storage import SessionStorage
-from Home import session_manager
 import extra_streamlit_components as stx
-
+import requests
+import streamlit as st
+from auth.user_authentication import decode_jwt
+from Home import session_manager
+from screens import *
+from streamlit_session_browser_storage import SessionStorage
 
 
 def login_page():
     st.title("Admin Login")
     get_user_inputs()
-    
-        
+
+
 def get_user_inputs():
     st.session_state.error = False
-    
+
     username = st.text_input(
         "Username",
         value="",
         help="Type your username."
     )
-    
+
     password = st.text_input(
         "Password",
         value="",
         help="Type your password.",
         type="password"
     )
-    
+
     st.button("Login", on_click=lambda: on_submit(username, password))
 
 
@@ -41,7 +40,8 @@ def on_submit(username, password):
         "password": password
     }
     session = session_manager.get_session()
-    response = session.post("https://canada-immigration-consultant.onrender.com/auth/login", data=form_data)
+    response = session.post(
+        "https://canada-immigration-consultant.onrender.com/auth/login", data=form_data)
     if response.status_code == 200:
         cookies = session.cookies.get_dict()
         token = cookies.get("access_token")
@@ -53,12 +53,13 @@ def on_submit(username, password):
             "is_super_admin": payload["is_super_admin"],
             "expiry": payload["exp"]
         }
-        
+
         ssbs.setItem("saved_session_data", saved_data)
         st.session_state.page = ADMIN_DASHBOARD
     else:
         st.session_state.error = True
         st.error("Error: Incorrect username or password. Please try again.")
- 
+
+
 if __name__ == "__main__":
     login_page()

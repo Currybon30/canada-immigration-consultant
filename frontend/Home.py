@@ -1,32 +1,37 @@
-import streamlit as st
-from auth.SessionManager import SessionManager
 import base64
 from pathlib import Path
 
+import streamlit as st
+from auth.SessionManager import SessionManager
+
 st.set_page_config(
-        page_title="IRIS",
-        page_icon="🍁",
-        layout="wide",
-        initial_sidebar_state="collapsed"
+    page_title="IRIS",
+    page_icon="🍁",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 st.logo(
     "frontend/static/iris-side.png",
     size="large"
 )
 
+
 def home_page():
     configue()
     read_css()
     main_content()
-    
+
 
 def configue():
     pass
-    
+
+
 def read_css():
     css_path = Path(__file__).parent / "styles.css"
     with open(css_path, "r") as file:
         st.markdown(f"<style>{file.read()}</style>", unsafe_allow_html=True)
+
+
 def main_content():
     logo_path = "frontend/static/IRIS.png"
     logo = base64.b64encode(open(logo_path, 'rb').read()).decode()
@@ -60,11 +65,9 @@ def main_content():
             </form>
         </div>
     """
-    
-    st.markdown(html_code, unsafe_allow_html=True)
-    
 
-        
+    st.markdown(html_code, unsafe_allow_html=True)
+
 
 session_manager = SessionManager()
 home_page()

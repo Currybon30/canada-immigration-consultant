@@ -1,28 +1,32 @@
+import os
+
+import dotenv
 import streamlit as st
+from admin.account_mgnt_page.operation_buttons import (change_password_button,
+                                                       delete_account_button,
+                                                       reset_password_button)
+from auth.user_authentication import is_super_admin
+from Home import session_manager
 from screens import *
 from streamlit_session_browser_storage import SessionStorage
-from Home import session_manager
-from admin.account_mgnt_page.operation_buttons import reset_password_button, delete_account_button, change_password_button
-import dotenv
-import os
-from auth.user_authentication import is_super_admin
-
 
 dotenv.load_dotenv()
+
 
 def account_mgnt_page():
     st.title("Account Management")
     st.sidebar.button("⬅ Back", on_click=go_back)
     st.button("Create Account", on_click=on_click)
     display_accounts()
-    
+
 
 def display_accounts():
     x_api_key = os.getenv("ADMIN_API_KEY")
     session = session_manager.get_session()
     token = session.cookies.get_dict().get("access_token")
-    response = session.get("https://canada-immigration-consultant.onrender.com/api/users", headers={"x-api-key": x_api_key, "Authorization": f"Bearer {token}"})
-    
+    response = session.get("https://canada-immigration-consultant.onrender.com/api/users",
+                           headers={"x-api-key": x_api_key, "Authorization": f"Bearer {token}"})
+
     if response.status_code == 403 or response.status_code == 401:
         st.error("Unauthorized access. Please login again.")
     elif response.status_code == 200:
@@ -40,8 +44,8 @@ def display_accounts():
         display_owner_account(owner_account)
         st.html("<hr>")
         display_other_accounts(accounts)
-            
-            
+
+
 def display_owner_account(owner_account):
     with st.container():
         st.markdown("<h3>Your Account</h3>", unsafe_allow_html=True)
@@ -53,9 +57,9 @@ def display_owner_account(owner_account):
                     <b>Name:</b> {owner_account["first_name"]} {owner_account["last_name"]}<br>
                 </div>
                 """,
-                unsafe_allow_html=True
-                )
-            
+                        unsafe_allow_html=True
+                        )
+
         with p2:
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
@@ -64,7 +68,7 @@ def display_owner_account(owner_account):
                 reset_password_button(owner_account["username"], disable=True)
             with col3:
                 delete_account_button(owner_account["username"], disable=True)
-            
+
 
 def display_other_accounts(accounts):
     with st.container():
@@ -81,25 +85,27 @@ def display_other_accounts(accounts):
                         <b>Name:</b> {account["first_name"]} {account["last_name"]}<br>
                     </div>
                     """,
-                    unsafe_allow_html=True
-                    )
-                    
+                                unsafe_allow_html=True
+                                )
+
                 with p2:
-                    if is_super_admin(): 
-                        disable = False 
-                    else: 
+                    if is_super_admin():
+                        disable = False
+                    else:
                         disable = True
-                        
+
                     col1, col2, col3 = st.columns([1, 1, 1])
                     with col1:
-                        change_password_button(disable=True, key=f'{account["username"]}_change_password')
+                        change_password_button(
+                            disable=True, key=f'{account["username"]}_change_password')
                     with col2:
-                        reset_password_button(account["username"], disable=disable, key=f'{account["username"]}_reset_password')
+                        reset_password_button(
+                            account["username"], disable=disable, key=f'{account["username"]}_reset_password')
                     with col3:
-                        delete_account_button(account["username"], disable=disable, key=f'{account["username"]}_delete_account')
+                        delete_account_button(
+                            account["username"], disable=disable, key=f'{account["username"]}_delete_account')
 
-    
-    
+
 def find_owner_account(users):
     ssbs = SessionStorage()
     session_data = ssbs.getItem("saved_session_data")
@@ -109,6 +115,7 @@ def find_owner_account(users):
         if user["username"] == session_data["username"]:
             return user
     return None
+
 
 def get_accounts_except_owner(users):
     ssbs = SessionStorage()
@@ -124,12 +131,14 @@ def get_accounts_except_owner(users):
     else:
         return accounts
 
+
 def on_click():
     st.session_state.page = SIGNUP_PAGE
-    
+
+
 def go_back():
     st.session_state.page = ADMIN_DASHBOARD
-    
+
 
 if __name__ == "__main__":
     account_mgnt_page()
