@@ -43,7 +43,7 @@ Live Demo: https://iris-canada.streamlit.app/
 
 **Note:** 
 - ⚠️ Designed for demonstration purposes; usage may be rate-limited, and model availability and response consistency may vary depending on external inference providers
-- ☁️ Hosted on a free-tier cloud service  
+- ☁️ Hosted on a free-tier cloud service with limited CPU and RAM ➡️ If the system falls back to the local model, responses may be unavailable
 - ⏳ May experience cold starts after periods of inactivity 
 
 ### Installation
